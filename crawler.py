@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from config import LINK, CATEGORY
 
 import requests
 from bs4 import BeautifulSoup
@@ -10,15 +11,16 @@ class CrawlerBase(ABC):
         pass
 
 
-class LinkCrawler:
+class LinkCrawler(CrawlerBase):
 
-    def __init__(self, category, link):
+    def __init__(self, category=CATEGORY, link=LINK):
         self.category = category
         self.link = link
 
-    def get_page(self, start):
+    @staticmethod
+    def get_page(link, start):
         try:
-            response = requests.get(self.link + str(start))
+            response = requests.get(link + str(start))
         except requests.HTTPError:
             return None
         return response
@@ -37,19 +39,16 @@ class LinkCrawler:
         links = []
         crawl = True
         while crawl:
-            page = get_page(link, start)
-            new_links = find_links(page.text)
+            page = self.get_page(link, start)
+            new_links = self.find_links(page.text)
             links.extend(new_links)
             start += 1
             crawl = bool(len(new_links))
         return links
 
-    def crawl_category():
-        category = ['tech', 'mobile']
-        # 'car', 'business', 'howstuffworks','science', 'dgreview', 'yesterday-news', 'tablighat'
-        link = "https://digiato.com/topic/{}/page/"
+    def start(self):
         all_links = {}
-        for cat in category:
-            cat_link = crawl_page(link.format(cat))
+        for cat in self.category:
+            cat_link = self.crawl_page(self.link.format(cat))
             all_links[cat] = cat_link
         return all_links
