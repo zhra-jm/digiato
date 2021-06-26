@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 
 
 class CrawlerBase(ABC):
+
     @abstractmethod
     def start(self):
         pass
@@ -49,6 +50,7 @@ class LinkCrawler(CrawlerBase):
     def start(self):
         all_links = {}
         for cat in self.category:
+            link = {}
             cat_link = self.crawl_page(self.link.format(cat))
-            all_links[cat] = cat_link
+            all_links[cat] = link[cat_link]
         return all_links
