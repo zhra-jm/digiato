@@ -14,6 +14,17 @@ class BaseImporter:
 
         return instances
 
+    @staticmethod
+    def loader(dic):
+        importer_classes = [
+            TechnologyImporter, MobileImporter, CarImporter,
+            BusinessImporter, HowStuffWorksImporter, ScienceImporter,
+            ReviewImporter
+        ]
+
+        for _class in importer_classes:
+            print(_class.load(dic))
+
 
 class TechnologyImporter(BaseImporter):
     model = Technology
