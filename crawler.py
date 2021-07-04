@@ -32,7 +32,7 @@ class LinkCrawler(CrawlerBase):
         soup = BeautifulSoup(html_doc, 'html.parser')
         for tag in soup.find_all('h3', attrs={'class': 'title'}):
             for a_tag in tag.find_all('a'):
-                tag_links.append(a_tag['href'])
+                tag_links.append({'link': a_tag['href']})
         return tag_links
 
     def crawl_page(self, link):
@@ -50,7 +50,6 @@ class LinkCrawler(CrawlerBase):
     def start(self):
         all_links = {}
         for cat in self.category:
-            link = {}
             cat_link = self.crawl_page(self.link.format(cat))
-            all_links[cat] = link[cat_link]
+            all_links[cat] = cat_link
         return all_links
