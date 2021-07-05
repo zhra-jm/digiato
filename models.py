@@ -1,8 +1,8 @@
 from datetime import datetime
 
+
 from peewee import Model, TextField, CharField, DateTimeField, BooleanField
 from playhouse.db_url import connect
-
 
 database = connect('mysql://zahra:3078@127.0.0.1:3306/digiato')
 
@@ -16,6 +16,8 @@ class BaseModel(Model):
 
 
 class Digiato(BaseModel):
+
+
     link = TextField()
     title = TextField(null=True)
     author = CharField(max_length=32, null=True)
@@ -32,13 +34,18 @@ class Digiato(BaseModel):
         )
 
     @staticmethod
-    def reader(model_list):
+    def link_reader(model_list):
+
         for model in model_list:
-            return model.select().model.link
+            query = model.select(
+                model.link
+            )
+            for q in query:
+                return q.link
 
     @staticmethod
-    def update_flag():
-        pass
+    def update_flag(model, flag_id):
+        model.update(flag=True).where(flag_id == model.id)
 
 
 class Technology(Digiato):
@@ -67,3 +74,4 @@ class Science(Digiato):
 
 class Review(Digiato):
     pass
+

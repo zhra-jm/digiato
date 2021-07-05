@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
 from config import LINK, CATEGORY
+from models import Technology, Mobile, Car, Business,HowStuffWorks, Science, Review
 
 import requests
 from bs4 import BeautifulSoup
 
 from importer import BaseImporter
 from models import Digiato
+from parser import Parser
 
 
 class CrawlerBase(ABC):
@@ -14,20 +16,24 @@ class CrawlerBase(ABC):
     def start(self):
         pass
 
+    @staticmethod
+    def storing(data):
+        pass
+
+    @staticmethod
+    def get_page(link):
+        try:
+            response = requests.get(link)
+        except requests.HTTPError:
+            return None
+        print(response.status_code)
+
 
 class LinkCrawler(CrawlerBase):
 
     def __init__(self, category=CATEGORY, link=LINK):
         self.category = category
         self.link = link
-
-    @staticmethod
-    def get_page(link, start):
-        try:
-            response = requests.get(link + str(start))
-        except requests.HTTPError:
-            return None
-        return response
 
     @staticmethod
     def find_links(html_doc):
@@ -43,7 +49,7 @@ class LinkCrawler(CrawlerBase):
         links = []
         crawl = True
         while crawl:
-            page = self.get_page(link, start)
+            page = self.get_page(link + str(start))
             new_links = self.find_links(page.text)
             links.extend(new_links)
             start += 1
@@ -63,4 +69,28 @@ class LinkCrawler(CrawlerBase):
     def storing(links):
         Digiato.create_data_table()
         BaseImporter.loader(links)
+
+
+class DataCrawler(CrawlerBase):
+    MODEL_NAME = [Technology, Mobile, Car, Business,
+                  HowStuffWorks, Science, Review]
+
+    def __init__(self):
+        self.links = self.__load_links(self.MODEL_NAME)
+        self.parser = Parser()
+
+    @staticmethod
+    def __load_links(model_list):
+        return Digiato.link_reader(model_list)
+
+    def start(self, store=False):
+        for link in self.links:
+            response = self.get_page(link)
+            print(response)
+
+
+    @staticmethod
+    def storing(data):
+        pass
+
 
