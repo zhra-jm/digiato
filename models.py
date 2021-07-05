@@ -32,9 +32,13 @@ class Digiato(BaseModel):
         )
 
     @staticmethod
-    def reader(model_list, column):
+    def reader(model_list):
         for model in model_list:
-            return model.select(column)
+            return model.select().model.link
+
+    @staticmethod
+    def update_flag():
+        pass
 
 
 class Technology(Digiato):

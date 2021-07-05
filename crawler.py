@@ -4,6 +4,9 @@ from config import LINK, CATEGORY
 import requests
 from bs4 import BeautifulSoup
 
+from importer import BaseImporter
+from models import Digiato
+
 
 class CrawlerBase(ABC):
 
@@ -47,9 +50,17 @@ class LinkCrawler(CrawlerBase):
             crawl = bool(len(new_links))
         return links
 
-    def start(self):
+    def start(self, store=False):
         all_links = {}
         for cat in self.category:
             cat_link = self.crawl_page(self.link.format(cat))
             all_links[cat] = cat_link
+        if store:
+            self.storing(all_links)
         return all_links
+
+    @staticmethod
+    def storing(links):
+        Digiato.create_data_table()
+        BaseImporter.loader(links)
+
