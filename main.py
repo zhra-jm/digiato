@@ -1,6 +1,5 @@
 import sys
 from crawler import LinkCrawler, DataCrawler
-from models import Digiato, Car, Mobile
 
 if __name__ == "__main__":
     switch = sys.argv[1]
@@ -9,7 +8,7 @@ if __name__ == "__main__":
         link_crawler.start(store=True)
     elif switch == "read_links":
         data_crawler = DataCrawler()
-        data_crawler.start()
+        data_crawler.start(store=True)
 
 
 

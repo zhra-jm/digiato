@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
 from config import LINK, CATEGORY
-from models import Technology, Mobile, Car, Business,HowStuffWorks, Science, Review
+from models import Technology, Mobile, Car, Business, Science,\
+    Review, HowStuffWorks, Digiato
 
 import requests
 from bs4 import BeautifulSoup
 
 from importer import BaseImporter
-from models import Digiato
 from parser import Parser
 
 
@@ -24,9 +24,9 @@ class CrawlerBase(ABC):
     def get_page(link):
         try:
             response = requests.get(link)
-        except requests.HTTPError:
-            return None
-        print(response.status_code)
+        except:
+            return print(link)
+        return response
 
 
 class LinkCrawler(CrawlerBase):
@@ -36,61 +36,72 @@ class LinkCrawler(CrawlerBase):
         self.link = link
 
     @staticmethod
-    def find_links(html_doc):
+    def find_links(html_doc, cat_name):
         tag_links = []
         soup = BeautifulSoup(html_doc, 'html.parser')
         for tag in soup.find_all('h3', attrs={'class': 'title'}):
             for a_tag in tag.find_all('a'):
-                tag_links.append({'link': a_tag['href']})
+                tag_links.append({'link': a_tag['href'], 'model_name': cat_name})
         return tag_links
 
-    def crawl_page(self, link):
-        start = 0
+    def start(self, store=False):
         links = []
-        crawl = True
-        while crawl:
-            page = self.get_page(link + str(start))
-            new_links = self.find_links(page.text)
-            links.extend(new_links)
-            start += 1
-            crawl = bool(len(new_links))
+        for cat in self.category:
+            start = 0
+            crawl = True
+            while crawl:
+                page = self.get_page(self.link.format(cat) + str(start))
+                new_links = self.find_links(page.text, cat)
+                links.extend(new_links)
+                start += 1
+                crawl = bool(len(new_links))
+        links.extend(self.start_how())
+        if store:
+            self.storing(links)
         return links
 
-    def start(self, store=False):
-        all_links = {}
-        for cat in self.category:
-            cat_link = self.crawl_page(self.link.format(cat))
-            all_links[cat] = cat_link
-        if store:
-            self.storing(all_links)
-        return all_links
+    def start_how(self):
+        links = []
+        start = 0
+        crawl = True
+        while crawl:
+            page = self.get_page('https://digiato.com/label/howstuffworks/page/' + f'{start}/')
+            new_links = self.find_links(page.text, 'howstuffworks')
+            start += 1
+            links.extend(new_links)
+            crawl = bool(len(new_links))
+
+        return links
 
     @staticmethod
     def storing(links):
         Digiato.create_data_table()
-        BaseImporter.loader(links)
+        BaseImporter.link_importer(links)
 
 
 class DataCrawler(CrawlerBase):
-    MODEL_NAME = [Technology, Mobile, Car, Business,
-                  HowStuffWorks, Science, Review]
+    MODEL_NAME = [Technology, Mobile, Car, Business, Science, Review, HowStuffWorks]
 
     def __init__(self):
-        self.links = self.__load_links(self.MODEL_NAME)
+        self.links = self.__load_links()
         self.parser = Parser()
 
     @staticmethod
-    def __load_links(model_list):
-        return Digiato.link_reader(model_list)
+    def __load_links():
+        return Digiato.link_reader()
 
     def start(self, store=False):
-        for link in self.links:
-            response = self.get_page(link)
-            print(response)
-
+        final_data = {'tech': [], 'mobile': [], 'car': [], 'business': [],
+                      'howstuffworks': [], 'science': [], 'dgreview': []}
+        for model, link in self.links.items():
+            for li in link:
+                response = self.get_page(li[0])
+                data = self.parser.parse(response.text)
+                final_data[model].append(data)
+                Digiato.update_flag(li[1])
+        if store:
+            self.storing(final_data)
 
     @staticmethod
     def storing(data):
-        pass
-
-
+        BaseImporter.loader(data)
