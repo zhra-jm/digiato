@@ -1,4 +1,4 @@
-from models import Technology, Mobile, Car, Business, HowStuffWorks, Science, Review
+from models import Link, Technology, Mobile, Car, Business, HowStuffWorks, Science, Review
 
 
 class BaseImporter:
@@ -6,10 +6,10 @@ class BaseImporter:
     cat_name = None
 
     @classmethod
-    def load(cls, dic):
+    def load(cls, class_list):
         instances = list()
 
-        for instance in dic[cls.cat_name]:
+        for instance in class_list:
             instances.append(cls.model.create(**instance))
 
         return instances
@@ -23,7 +23,19 @@ class BaseImporter:
         ]
 
         for _class in importer_classes:
-            print(_class.load(dic))
+            print(_class.load(dic[_class.cat_name]))
+
+    @staticmethod
+    def link_importer(link_list):
+        instances = list()
+        for instance in link_list:
+            instances.append(LinkImporter.model.create(**instance))
+        return instances
+
+
+class LinkImporter(BaseImporter):
+    model = Link
+    cat_name = 'link'
 
 
 class TechnologyImporter(BaseImporter):
@@ -59,5 +71,3 @@ class ScienceImporter(BaseImporter):
 class ReviewImporter(BaseImporter):
     model = Review
     cat_name = 'dgreview'
-
-
