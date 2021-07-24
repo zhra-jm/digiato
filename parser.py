@@ -54,3 +54,4 @@ class Parser:
         data = dict(title=self.title, author=self.author, date_written=self.date_written,
                     pdf_link=self.pdf_link, text=self.text)
         return data
+
