@@ -1,9 +1,7 @@
 from datetime import datetime
 
 from peewee import Model, TextField, CharField, DateTimeField, BooleanField
-from playhouse.db_url import connect
-
-database = connect('mysql://zahra:3078@127.0.0.1:3306/digiato')
+from info import database
 
 
 class BaseModel(Model):
