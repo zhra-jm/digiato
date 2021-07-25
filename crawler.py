@@ -1,12 +1,11 @@
 from abc import ABC, abstractmethod
 from config import LINK, CATEGORY
-from models import Technology, Mobile, Car, Business, Science,\
-    Review, HowStuffWorks, Digiato
+from models import Digiato, Link
 
 import requests
 from bs4 import BeautifulSoup
 
-from importer import BaseImporter
+# from importer import LinkImporter
 from parser import Parser
 
 
@@ -76,11 +75,10 @@ class LinkCrawler(CrawlerBase):
     @staticmethod
     def storing(links):
         Digiato.create_data_table()
-        BaseImporter.link_importer(links)
+        Link.link_importer(links)
 
 
 class DataCrawler(CrawlerBase):
-    MODEL_NAME = [Technology, Mobile, Car, Business, Science, Review, HowStuffWorks]
 
     def __init__(self):
         self.links = self.__load_links()
@@ -104,4 +102,4 @@ class DataCrawler(CrawlerBase):
 
     @staticmethod
     def storing(data):
-        BaseImporter.loader(data)
+        Digiato.loader(data)
